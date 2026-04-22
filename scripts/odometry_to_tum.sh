@@ -1,0 +1,1 @@
+python3 odometry_to_tum.py /Odometry trajectory_tum.txt
