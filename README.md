@@ -10,7 +10,7 @@
 
 ## 🗂️ Pipeline
 <div align="center">
-  <img src="docs/overviewPipeline.pdf" alt="Leap-SLAM Pipeline" width="100%" />
+  <img src="docs/overviewPipeline.png" alt="Leap-SLAM Pipeline" width="100%" />
 </div>
 
 ## ⚙️ Prerequisites
