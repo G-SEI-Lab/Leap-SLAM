@@ -45,14 +45,14 @@ We validated the superiority of our algorithm in three tunnel scenarios. Below a
 Mapping length comparison across the three tunnels.
 
 <div align="center">
-  <img src="docs/3_tunnel_pcd.png" alt="3_tunnel_pcd" width="100%" />
+  <img src="docs/3_tunnel_pcd.png" alt="3_tunnel_pcd" width="60%" />
 </div>
 
 ### Tunnel Mapping Detail Comparison
 Detailed comparison in one of the tunnels.
 
 <div align="center">
-  <img src="docs/exp_compare_leap-fast.png" alt="exp_compare_leap-fast" width="100%" />
+  <img src="docs/exp_compare_leap-fast.png" alt="exp_compare_leap-fast" width="30%" />
 </div>
 
 ## Acknowledgement
