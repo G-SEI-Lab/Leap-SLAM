@@ -16,7 +16,7 @@
 ## ⚙️ Prerequisites
 
 ### 1. System Requirements
-* **OS:** Ubuntu 16.04 or higher. *(Note: For Ubuntu 18.04 and above, the default PCL and Eigen libraries are sufficient.)*
+* **OS:** Ubuntu 20.04.
 * **ROS:** Melodic or higher. Follow the [official ROS Installation guide](http://wiki.ros.org/ROS/Installation).
 
 ### 2. Dependencies
