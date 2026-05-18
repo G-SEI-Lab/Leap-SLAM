@@ -9,9 +9,9 @@
 </div>
 
 ## 🗂️ Pipeline
-<!-- <div align="center">
-  <img src="doc/overview_fastlio2.svg" alt="Leap-SLAM Pipeline" width="100%" />
-</div> -->
+<div align="center">
+  <img src="docs/overviewPipeline.pdf" alt="Leap-SLAM Pipeline" width="100%" />
+</div>
 
 ## ⚙️ Prerequisites
 
