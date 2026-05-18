@@ -44,12 +44,16 @@ We validated the superiority of our algorithm in three tunnel scenarios. Below a
 ### Tunnel Mapping Length Comparison
 Mapping length comparison across the three tunnels.
 
-<image-card alt="3_tunnel_pcd" src="pics/3_tunnel_pcd.png" ></image-card>
+<div align="center">
+  <img src="docs/3_tunnel_pcd.png" alt="3_tunnel_pcd" width="100%" />
+</div>
 
 ### Tunnel Mapping Detail Comparison
 Detailed comparison in one of the tunnels.
 
-<image-card alt="exp_compare_leap-fast" src="pics/exp_compare_leap-fast.png" ></image-card>
+<div align="center">
+  <img src="docs/exp_compare_leap-fast.png" alt="exp_compare_leap-fast" width="100%" />
+</div>
 
 ## Acknowledgement
 This project is built upon the foundational work of [FAST-LIO2](https://github.com/hku-mars/FAST_LIO). We highly recommend referring to their repository for deeper insights into the core framework.
