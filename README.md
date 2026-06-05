@@ -4,8 +4,12 @@
   <p>
     <a href="docs/paper.pdf"><img src="https://img.shields.io/badge/Paper-PDF-red.svg" alt="Paper"></a>
     <a href="https://js-ch3n.github.io/leap-slam.io/"><img src="https://img.shields.io/badge/Project%20Page-Website-blue.svg" alt="Project Page"></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL%20v2-green.svg" alt="License"></a>
   </p>
 </div>
+
+## 📰 News
+- **2026-06-05:** Our paper has been accepted by **Information Fusion**! 🎉
 
 ## 🗂️ Pipeline
 <div align="center">
@@ -54,6 +58,20 @@ Detailed comparison in one of the tunnels.
 <div align="center">
   <img src="docs/exp_compare_leap-fast.png" alt="exp_compare_leap-fast" width="30%" />
 </div>
+
+## 📝 Citation
+
+If you find this work useful, please cite our paper:
+
+```bibtex
+@article{chen2026leapslam,
+  title={Leap-SLAM: A Degeneracy-Mitigated Robust LiDAR-Inertial Framework},
+  author={Chen, Shoubin and Chen, Jiasheng and Zhang, Baiyang and Yan, Maosheng and Li, Jianping and Zhang, Bo and Li, Qingquan},
+  journal={Information Fusion},
+  year={2026},
+  note={to appear}
+}
+```
 
 ## Acknowledgement
 This project is built upon the foundational work of [FAST-LIO2](https://github.com/hku-mars/FAST_LIO). We highly recommend referring to their repository for deeper insights into the core framework.
