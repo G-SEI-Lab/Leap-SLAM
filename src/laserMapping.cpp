@@ -1125,138 +1125,6 @@ void h_share_model(state_ikfom &s, esekfom::dyn_share_datastruct<double> &ekfom_
 }
 
 
-// void h_share_model_reflective(state_ikfom &s, esekfom::dyn_share_datastruct<double> &ekfom_data)
-// {
-//     laserCloudOri->clear(); 
-//     corr_normvect->clear(); 
-//     total_residual = 0.0; 
-
-//     /** closest surface search and residual computation **/
-//     #ifdef MP_EN
-//         omp_set_num_threads(MP_PROC_NUM);
-//         #pragma omp parallel for
-//     #endif
-//     for (int i = 0; i < feats_reflective_size; i++)
-//     {
-//         PointType &point_body  = feats_reflective_body->points[i]; 
-//         PointType &point_world = feats_reflective_world->points[i]; 
-
-//         /* transform to world frame */
-//         V3D p_body(point_body.x, point_body.y, point_body.z);
-//         V3D p_global(s.rot * (s.offset_R_L_I*p_body + s.offset_T_L_I) + s.pos);
-//         point_world.x = p_global(0);
-//         point_world.y = p_global(1);
-//         point_world.z = p_global(2);
-//         point_world.intensity = point_body.intensity;
-
-//         vector<float> pointSearchSqDis(NUM_MATCH_POINTS);
-
-//         auto &points_near = Nearest_Points_reflective[i];
-
-//         if (ekfom_data.converge)
-//         {
-//             /** Find the closest surfaces in the map **/
-//             ikdtree.Nearest_Search(point_world, NUM_MATCH_POINTS, points_near, pointSearchSqDis);
-//             point_selected_surf_reflective[i] = points_near.size() < NUM_MATCH_POINTS ? false : pointSearchSqDis[NUM_MATCH_POINTS - 1] > 5 ? false : true;
-//         }
-
-//         if (!point_selected_surf_reflective[i]) continue;
-
-//         VF(4) pabcd;
-//         point_selected_surf_reflective[i] = false;
-//         if (esti_plane(pabcd, points_near, 0.1f))
-//         {
-//             float pd2 = pabcd(0) * point_world.x + 
-//                         pabcd(1) * point_world.y + 
-//                         pabcd(2) * point_world.z + 
-//                         pabcd(3);
-//             float s = 1 - 0.9 * fabs(pd2) / sqrt(p_body.norm());
-
-//             if (s > 0.9)
-//             {
-//                 point_selected_surf_reflective[i] = true;
-//                 normvec_reflective->points[i].x = pabcd(0);
-//                 normvec_reflective->points[i].y = pabcd(1);
-//                 normvec_reflective->points[i].z = pabcd(2);
-//                 normvec_reflective->points[i].intensity = pd2;
-//                 res_last_reflective[i] = abs(pd2);
-//             }
-//         }
-//     }
-    
-//     effct_feat_num_reflective = 0;
-
-//     for (int i = 0; i < feats_reflective_size; i++)
-//     {
-//         if (point_selected_surf_reflective[i])
-//         {
-//             laserCloudOri->points[effct_feat_num_reflective] = feats_down_body->points[i];
-//             corr_normvect->points[effct_feat_num_reflective] = normvec_reflective->points[i];
-//             total_residual += res_last_reflective[i];
-//             effct_feat_num_reflective ++;
-//         }
-//     }
-
-//     if (effct_feat_num_reflective < 1)
-//     {
-//         ekfom_data.valid = false;
-//         ROS_WARN("No Effective Points! \n");
-//         return;
-//     }
-
-//     res_mean_last = total_residual / effct_feat_num_reflective;
-    
-//     /*** Computation of Measuremnt Jacobian matrix H and measurents vector ***/
-//     ekfom_data.h_x = MatrixXd::Zero(effct_feat_num_reflective, 12); //23
-//     ekfom_data.h.resize(effct_feat_num_reflective);
-
-//     for (int i = 0; i < effct_feat_num_reflective; i++)
-//     {
-//         const PointType &laser_p  = laserCloudOri->points[i];
-//         V3D point_this_be(laser_p.x, laser_p.y, laser_p.z);
-//         M3D point_be_crossmat;
-//         point_be_crossmat << SKEW_SYM_MATRX(point_this_be);
-//         V3D point_this = s.offset_R_L_I * point_this_be + s.offset_T_L_I;
-//         M3D point_crossmat;
-//         point_crossmat<<SKEW_SYM_MATRX(point_this);
-
-//         /*** get the normal vector of closest surface/corner ***/
-//         const PointType &norm_p = corr_normvect->points[i];
-//         V3D norm_vec(norm_p.x, norm_p.y, norm_p.z);
-
-//         /*** calculate the Measuremnt Jacobian matrix H ***/
-//         V3D C(s.rot.conjugate() *norm_vec);
-//         V3D A(point_crossmat * C);
-//         if (extrinsic_est_en)
-//         {
-//             V3D B(point_be_crossmat * s.offset_R_L_I.conjugate() * C); //s.rot.conjugate()*norm_vec);
-//             ekfom_data.h_x.block<1, 12>(i,0) << norm_p.x,
-//                                                 norm_p.y, 
-//                                                 norm_p.z, 
-//                                                 VEC_FROM_ARRAY(A), 
-//                                                 VEC_FROM_ARRAY(B), 
-//                                                 VEC_FROM_ARRAY(C);
-//         }
-//         else
-//         {
-//             ekfom_data.h_x.block<1, 12>(i,0) << norm_p.x, 
-//                                                 norm_p.y, 
-//                                                 norm_p.z, 
-//                                                 VEC_FROM_ARRAY(A), 
-//                                                 0.0, 
-//                                                 0.0, 
-//                                                 0.0, 
-//                                                 0.0, 
-//                                                 0.0, 
-//                                                 0.0;
-//         }
-
-//         /*** Measuremnt: distance to the closest surface/corner ***/
-//         ekfom_data.h(i) = -norm_p.intensity;
-//     }
-// }
-
-
 bool stopFlagA = false;
 bool lastStopFlagA = false;
 int stabilityCountA = 0;        // 动态窗口，提高稳定性
@@ -1272,8 +1140,8 @@ void stop_flag_cbk_a(const nav_msgs::Odometry::ConstPtr& odom_msg)
 
     // 判断小车是否静止
     if (std::abs(linear_vel) < linear_threshold && std::abs(angular_vel) < angular_threshold) {
-        stabilityCountA = std::min(stabilityCountA + 1, 2);
-        if (stabilityCountA < 2) return;
+        stabilityCountA = std::min(stabilityCountA + 1, 3);
+        if (stabilityCountA < 3) return;
 
         stopFlagA = true;
         if (lastStopFlagA != stopFlagA) {
@@ -1340,195 +1208,35 @@ void getReflectivePoints(const PointCloudXYZI::Ptr& cloud_in, PointCloudXYZI::Pt
             cloud_out->points.push_back(cloud_in->points[i]);
         }
     }
+
+    std::ofstream outfile("feature_size.txt", std::ios::app); 
+    if (outfile.is_open())
+    {
+        outfile << cloud_out->points.size() << "\n";
+        outfile.close();
+    }
+    else
+    {
+        std::cerr << "无法打开 feature_size.txt 进行写入!" << std::endl;
+    }
+    // -----------------------------------------------------------
+
+    cout << "---getReflectivePoints Size--- " << cloud_out->points.size() << endl;
 }
-
-// get high-localizability points, in a Euclidean Clustering and Geometric Verification way
-// three-stage: 
-//1. cluster with Euclidean Clustering; 
-//2. Euclidean Clustering; 
-//3. Geometric Verification
-// remove H.point from cloud_in(undistort_)
-// // 20260421 js-ch3n
-// void extractHighLocalizabilityFeatures(const PointCloudXYZI::Ptr& cloud_in, 
-//                                        PointCloudXYZI::Ptr& cloud_out)
-// {
-//     cloud_out->clear();
-//     if (cloud_in->empty()) return;
-
-//     // ==========================================
-//     // 参数配置
-//     // ==========================================
-//     // const double intensity_thres = 250.0; 
-    
-//     const double cluster_tolerance = 0.2;     
-//     const int min_cluster_size = 10;          
-//     const int max_cluster_size = 1000;        
-    
-//     const double H_ref = reflective_beacon_height;                  
-//     const double epsilon_H = 0.1;             
-//     const double tau_L = 5.0;                 
-
-//     const double max_distance_thres = basic_motion_length;  
-    
-//     // --- 新增：挖球剔除的半径 ---
-//     const double remove_radius = car_ball_radius;         // 剔除球体的半径 (米)
-//     const double remove_radius_sq = remove_radius * remove_radius; // 预计算平方，省去开根号的算力
-
-//     // ==========================================
-//     // 1. 基于反射强度的初步筛选 
-//     // ==========================================
-//     PointCloudXYZI::Ptr cloud_candidates(new PointCloudXYZI());
-    
-//     for (size_t i = 0; i < cloud_in->points.size(); ++i)
-//     {
-//         if (cloud_in->points[i].intensity >= intensity_thres)
-//         {
-//             cloud_candidates->points.push_back(cloud_in->points[i]);
-//         }
-//     }
-    
-//     cloud_candidates->width = cloud_candidates->points.size();
-//     cloud_candidates->height = 1;
-//     cloud_candidates->is_dense = true;
-
-//     if (cloud_candidates->empty()) return;
-
-//     // ==========================================
-//     // 2. 空间聚类 
-//     // ==========================================
-//     pcl::search::KdTree<PointType>::Ptr tree(new pcl::search::KdTree<PointType>);
-//     tree->setInputCloud(cloud_candidates);
-
-//     std::vector<pcl::PointIndices> cluster_indices;
-//     pcl::EuclideanClusterExtraction<PointType> ec;
-//     ec.setClusterTolerance(cluster_tolerance);
-//     ec.setMinClusterSize(min_cluster_size);
-//     ec.setMaxClusterSize(max_cluster_size);
-//     ec.setSearchMethod(tree);
-//     ec.setInputCloud(cloud_candidates);
-//     ec.extract(cluster_indices);
-
-//     // ==========================================
-//     // 3. 几何先验模型验证 
-//     // ==========================================
-    
-//     // --- 核心改动：用一个 vector 专门收集有效反光板的质心 ---
-//     std::vector<Eigen::Vector3f> valid_centroids;
-
-//     for (const auto& indices : cluster_indices)
-//     {
-//         PointCloudXYZI::Ptr current_cluster(new PointCloudXYZI());
-//         for (const auto& idx : indices.indices)
-//         {
-//             current_cluster->points.push_back(cloud_candidates->points[idx]);
-//         }
-
-//         Eigen::Vector4f centroid;
-//         pcl::compute3DCentroid(*current_cluster, centroid);
-        
-//         // --- 距离校验 ---
-//         double distance_to_origin = std::sqrt(centroid[0] * centroid[0] + 
-//                                               centroid[1] * centroid[1] + 
-//                                               centroid[2] * centroid[2]);
-//         if (distance_to_origin > max_distance_thres)
-//         {
-//             continue;
-//         }
-
-//         // --- 3.1 高度校验 ---
-//         PointType min_pt, max_pt;
-//         pcl::getMinMax3D(*current_cluster, min_pt, max_pt);
-//         double H_j = max_pt.z - min_pt.z; 
-
-//         if (std::abs(H_j - H_ref) > epsilon_H)
-//         {
-//             continue; 
-//         }
-
-//         // --- 3.2 形状校验/线性度 ---
-//         pcl::PCA<PointType> pca;
-//         pca.setInputCloud(current_cluster);
-//         Eigen::Vector3f eigen_values = pca.getEigenValues();
-
-//         if (eigen_values[1] <= 1e-6) continue;
-
-//         double L_j = eigen_values[0] / eigen_values[1];
-
-//         // 最终确认为高可信度特征点！
-//         if (L_j > tau_L)
-//         {
-//             *cloud_out += *current_cluster;
-            
-//             // 把确认是反光板的质心坐标 (x, y, z) 存下来
-//             valid_centroids.push_back(Eigen::Vector3f(centroid[0], centroid[1], centroid[2]));
-//         }
-//     }
-
-//     // ==========================================
-//     // 4. 执行原点云“挖球”操作 (剔除质心附近的点)
-//     // ==========================================
-//     if (!valid_centroids.empty())
-//     {
-//         PointCloudXYZI clean_cloud;
-//         clean_cloud.reserve(cloud_in->size() - cloud_out->size());
-
-//         // 遍历整个原始点云
-//         for (size_t i = 0; i < cloud_in->size(); ++i)
-//         {
-//             const auto& pt = cloud_in->points[i];
-//             bool is_inside_any_sphere = false;
-
-//             // 检查当前点是否在任意一个反光板的“半径球”内
-//             for (const auto& center : valid_centroids)
-//             {
-//                 float dx = pt.x - center.x();
-//                 float dy = pt.y - center.y();
-//                 float dz = pt.z - center.z();
-                
-//                 // 计算距离的平方，避免耗时的 sqrt 操作
-//                 if ((dx * dx + dy * dy + dz * dz) <= remove_radius_sq)
-//                 {
-//                     is_inside_any_sphere = true;
-//                     break; // 只要在一个球内，直接宣判死刑，跳出检查下一个点
-//                 }
-//             }
-
-//             // 如果不在任何球内，保留该点
-//             if (!is_inside_any_sphere) 
-//             {
-//                 clean_cloud.push_back(pt);
-//             }
-//         }
-        
-//         // 替换底层点云数据
-//         cloud_in->swap(clean_cloud); 
-//     }
-// }
 
 void extractHighLocalizabilityFeatures(const PointCloudXYZI::Ptr& cloud_in, 
                                        PointCloudXYZI::Ptr& cloud_out)
 {
-    cloud_out->clear();
-    if (cloud_in->empty()) return;
-
-    // ==========================================
-    // 参数配置
-    // ==========================================
-    // 假设 intensity_thres 和 basic_motion_length 已在外部定义
     const double max_distance_thres = basic_motion_length; 
     
     // 预计算距离的平方，避免在循环里频繁调用耗时的 sqrt 函数
     const double max_distance_sq = max_distance_thres * max_distance_thres;
 
-    // ==========================================
     // 提取逻辑：仅保留满足强度且在距离范围内的点
-    // ==========================================
     for (const auto& pt : cloud_in->points)
     {
-        // 1. 判断反射强度
         if (pt.intensity >= intensity_thres)
         {
-            // 2. 计算点到雷达原点 (0,0,0) 的三维欧氏距离平方
             double dist_sq = pt.x * pt.x + pt.y * pt.y + pt.z * pt.z;
 
             // 如果在要求的距离范围内，则认为是需要的点
@@ -1540,9 +1248,128 @@ void extractHighLocalizabilityFeatures(const PointCloudXYZI::Ptr& cloud_in,
     }
 
     // 重置点云属性
-    cloud_out->width = cloud_out->points.size();
-    cloud_out->height = 1;
-    cloud_out->is_dense = true;
+    // cloud_out->width = cloud_out->points.size();
+    // cloud_out->height = 1;
+    // cloud_out->is_dense = true;
+
+    cout << "---extractHighLocalizabilityFeatures Size--- " << cloud_out->points.size() << endl;
+}
+
+void extractHighLocalizabilityFeatures_(const PointCloudXYZI::Ptr& cloud_in, 
+                                       PointCloudXYZI::Ptr& cloud_out)   // 对应 X_h
+{
+    // ==========================================
+    // 算法参数配置
+    // ==========================================
+    const float xi = intensity_thres;               
+    const double cluster_tolerance = 0.11;          
+    const int min_cluster_size = 2;                 
+    const int max_cluster_size = 500;               
+    
+    const double max_H = 0.35; // 聚类允许的最大高度
+    const double max_W = 0.16; // 聚类允许的最大宽度 (XY平面的最大跨度)
+
+    const double max_distance_thres = basic_motion_length; 
+    const double max_distance_sq = max_distance_thres * max_distance_thres; // 预计算距离平方
+
+    // ==========================================
+    // Step 1: 提取候选点集 X_c (双重过滤：强度 + 距离)
+    // ==========================================
+    PointCloudXYZI::Ptr cloud_c(new PointCloudXYZI);
+
+    for (size_t i = 0; i < cloud_in->points.size(); ++i)
+    {
+        const auto& pt = cloud_in->points[i];
+
+        // 1. 满足高反阈值
+        if (pt.intensity >= xi)
+        {
+            // 2. 满足空间距离要求 (避免调用耗时的 sqrt)
+            double dist_sq = pt.x * pt.x + pt.y * pt.y + pt.z * pt.z;
+            if (dist_sq <= max_distance_sq)
+            {
+                cloud_c->points.push_back(pt);
+            }
+        }
+    }
+
+    if (cloud_c->empty()) return;
+
+    // ==========================================
+    // Step 2: 对候选点集进行欧式聚类
+    // ==========================================
+    pcl::search::KdTree<pcl::PointXYZINormal>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZINormal>);
+    tree->setInputCloud(cloud_c);
+
+    std::vector<pcl::PointIndices> cluster_indices;
+    pcl::EuclideanClusterExtraction<pcl::PointXYZINormal> ec;
+    ec.setClusterTolerance(cluster_tolerance);
+    ec.setMinClusterSize(min_cluster_size);
+    ec.setMaxClusterSize(max_cluster_size);
+    ec.setSearchMethod(tree);
+    ec.setInputCloud(cloud_c);
+    ec.extract(cluster_indices);
+
+    // ==========================================
+    // Step 3: 几何先验模型校验 (包围盒过滤)
+    // ==========================================
+    for (const auto& cluster : cluster_indices)
+    {
+        // 初始化 XYZ 三个方向的极值
+        float x_min = std::numeric_limits<float>::max();
+        float x_max = -std::numeric_limits<float>::max();
+        float y_min = std::numeric_limits<float>::max();
+        float y_max = -std::numeric_limits<float>::max();
+        float z_min = std::numeric_limits<float>::max();
+        float z_max = -std::numeric_limits<float>::max();
+
+        // 遍历当前聚类，更新极值
+        for (size_t i = 0; i < cluster.indices.size(); ++i)
+        {
+            const auto& pt = cloud_c->points[cluster.indices[i]];
+            if (pt.x < x_min) x_min = pt.x;
+            if (pt.x > x_max) x_max = pt.x;
+            if (pt.y < y_min) y_min = pt.y;
+            if (pt.y > y_max) y_max = pt.y;
+            if (pt.z < z_min) z_min = pt.z;
+            if (pt.z > z_max) z_max = pt.z;
+        }
+
+        // 计算当前聚类在各维度的跨度
+        double H_j = z_max - z_min;
+        double W_x = x_max - x_min;
+        double W_y = y_max - y_min;
+
+        // 选取 XY 平面上的最大跨度作为宽度
+        double W_j = std::max(W_x, W_y);
+
+        // 校验约束条件: 高度小于 max_H 且 宽度小于 max_W
+        if (H_j < max_H && W_j < max_W)
+        {
+            for (const auto& idx : cluster.indices)
+            {
+                cloud_out->points.push_back(cloud_c->points[idx]);
+            }
+        }
+    }
+
+    // ---------------- 新增：记录 size 到 txt 文本 ----------------
+    // 以追加模式(app)打开文件，这样连续的帧数据会不断写在后面，不会互相覆盖
+    // 建议写绝对路径，比如 "/home/cjs/workspace/leap_slam_ws/feature_size.txt"
+    std::ofstream outfile("feature_size_H.txt", std::ios::app); 
+    if (outfile.is_open())
+    {
+        outfile << cloud_out->points.size() << "\n";
+        outfile.close();
+    }
+    else
+    {
+        std::cerr << "无法打开 feature_size.txt 进行写入!" << std::endl;
+    }
+    // -----------------------------------------------------------
+
+
+    std::cout << "--- extractHighLocalizabilityFeatures Total Size --- : " << cloud_out->points.size() << std::endl;
 }
 
 double get_curr_mem_usage() {
@@ -1605,7 +1432,7 @@ int main(int argc, char** argv)
     nh.param<double>("test", test, 10);
     nh.param<int>("h_weight", h_weight, 10);
 
-    nh.param<double>("filter_size_reflective", filter_size_reflective, 0.03);
+    nh.param<double>("filter_size_reflective", filter_size_reflective, 0.01);
     nh.param<double>("basic_motion_length", basic_motion_length, 10.0);
     nh.param<double>("reflective_beacon_diameter", reflective_beacon_diameter, 0.11);
     nh.param<double>("reflective_beacon_height", reflective_beacon_height, 0.30);
@@ -1772,9 +1599,11 @@ int main(int argc, char** argv)
 
             // cjs on 20250626
             // 不能用feats_down_body，这是体素滤波后的，intensity也被平均掉了
+            
+            // feats_reflective_body->clear();
+            // extractHighLocalizabilityFeatures_(feats_undistort, feats_reflective_body);
             feats_reflective_body->clear();
             getReflectivePoints(feats_undistort, feats_reflective_body);
-            // extractHighLocalizabilityFeatures(feats_undistort, feats_reflective_body);
             downSizeFilterReflective.setInputCloud(feats_reflective_body);
             downSizeFilterReflective.filter(*feats_reflective_down_body);
             feats_reflective_size = feats_reflective_down_body->points.size();
