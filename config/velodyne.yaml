@@ -20,7 +20,7 @@ mapping:
     fov_degree:    180
     det_range:     100.0
     extrinsic_est_en:  false      # true: enable the online estimation of IMU-LiDAR extrinsic,
-    extrinsic_T: [ 0, 0, 0.28]
+    extrinsic_T: [ 0, 0, 0]
     extrinsic_R: [ 1, 0, 0, 
                    0, 1, 0, 
                    0, 0, 1]
@@ -37,7 +37,7 @@ pcd_save:
                                  # -1 : all frames will be saved in ONE pcd file, may lead to memory crash when having too much frames.
 
 eigen_thres: 100
-intensity_thres: 200
+intensity_thres: 250
 h_weight: 10
 basic_motion_length: 18
 
