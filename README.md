@@ -2,14 +2,16 @@
   <h1>Leap-SLAM</h1>
   
   <p>
+    <a href="https://doi.org/10.1016/j.inffus.2026.104538"><img src="https://img.shields.io/badge/DOI-10.1016%2Fj.inffus.2026.104538-blue.svg" alt="DOI"></a>
     <a href="docs/paper.pdf"><img src="https://img.shields.io/badge/Paper-PDF-red.svg" alt="Paper"></a>
-    <a href="https://js-ch3n.github.io/leap-slam.io/"><img src="https://img.shields.io/badge/Project%20Page-Website-blue.svg" alt="Project Page"></a>
+    <a href="https://js-ch3n.github.io/leap-slam.io/"><img src="https://img.shields.io/badge/Project%20Page-Website-brightgreen.svg" alt="Project Page"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL%20v2-green.svg" alt="License"></a>
   </p>
 </div>
 
 ## 📰 News
-- **2026-06-05:** Our paper has been accepted by **Information Fusion**! 🎉
+- **2026-06-05:** Our paper has been accepted by **Information Fusion**! 🎉  
+- **2026-06-17:** The DOI is now available: [10.1016/j.inffus.2026.104538](https://doi.org/10.1016/j.inffus.2026.104538)
 
 ## 🗂️ Pipeline
 <div align="center">
@@ -65,11 +67,10 @@ If you find this work useful, please cite our paper:
 
 ```bibtex
 @article{chen2026leapslam,
-  title={Leap-SLAM: A Degeneracy-Mitigated Robust LiDAR-Inertial Framework},
+  title={Leap-SLAM: Degeneracy-Mitigated Robust SLAM with Leapfrogging Multi-robot Collaboration in Tunnels},
   author={Chen, Shoubin and Chen, Jiasheng and Zhang, Baiyang and Yan, Maosheng and Li, Jianping and Zhang, Bo and Li, Qingquan},
   journal={Information Fusion},
-  year={2026},
-  note={to appear}
+  year={2026},,
 }
 ```
 
