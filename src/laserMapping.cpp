@@ -525,8 +525,7 @@ void publish_frame_world(const ros::Publisher & pubLaserCloudFull)
 
         PointCloudXYZI::Ptr laserCloudFullRes(dense_pub_en ? feats_undistort : feats_down_body);
         int size = laserCloudFullRes->points.size();
-        PointCloudXYZI::Ptr laserCloudWorld( \
-                        new PointCloudXYZI(size, 1));
+        PointCloudXYZI::Ptr laserCloudWorld(new PointCloudXYZI(size, 1));
 
         for (int i = 0; i < size; i++)
         {
@@ -1539,8 +1538,30 @@ int main(int argc, char** argv)
             
             cout << "packages sync" << endl;
             now_lidar_time = std::to_string(Measures.lidar_beg_time);
+
+            // 如果A静止，跳过预测/更新，仅发布滤波后的原始点云
             if (flg_EKF_inited && stopFlagA && scan_count > 100)
+            {
+                if (scan_pub_en)
+                {
+                    static PointCloudXYZI::Ptr feats_down_body_static(new PointCloudXYZI());
+                    downSizeFilterSurf.setInputCloud(Measures.lidar);
+                    downSizeFilterSurf.filter(*feats_down_body_static);
+                    int size = feats_down_body_static->points.size();
+                    PointCloudXYZI::Ptr laserCloudWorld(new PointCloudXYZI(size, 1));
+                    for (int i = 0; i < size; i++)
+                    {
+                        RGBpointBodyToWorld(&feats_down_body_static->points[i], &laserCloudWorld->points[i]);
+                    }
+                    sensor_msgs::PointCloud2 laserCloudmsg;
+                    pcl::toROSMsg(*laserCloudWorld, laserCloudmsg);
+                    laserCloudmsg.header.stamp = ros::Time().fromSec(Measures.lidar_end_time);
+                    laserCloudmsg.header.frame_id = "camera_init";
+                    pubLaserCloudFull.publish(laserCloudmsg);
+                    publish_count -= PUBFRAME_PERIOD;
+                }
                 continue;
+            }
 
             if (flg_first_scan)
             {
@@ -1556,7 +1577,6 @@ int main(int argc, char** argv)
             double t_mitigation_start, t_mitigation_end;
 
             // 20260413 cjs added, for runtime evaluation that is mentioned in the review comments
-            // double tt0, tt1, leapslam_runtime_loop;
             double leapslam_runtime_loop;
 
             match_time = 0;
