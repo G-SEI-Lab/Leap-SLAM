@@ -66,11 +66,17 @@ Detailed comparison in one of the tunnels.
 If you find this work useful, please cite our paper:
 
 ```bibtex
-@article{chen2026leapslam,
+@article{chen2026leap,
   title={Leap-SLAM: Degeneracy-Mitigated Robust SLAM with Leapfrogging Multi-robot Collaboration in Tunnels},
   author={Chen, Shoubin and Chen, Jiasheng and Zhang, Baiyang and Yan, Maosheng and Li, Jianping and Zhang, Bo and Li, Qingquan},
   journal={Information Fusion},
+<<<<<<< HEAD
   year={2026},
+=======
+  pages={104538},
+  year={2026},
+  publisher={Elsevier}
+>>>>>>> eb850a5 (update citation: add pages and publisher, rename bibtex key to chen2026leap)
 }
 ```
 
