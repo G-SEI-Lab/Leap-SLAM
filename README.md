@@ -5,6 +5,7 @@
     <a href="https://doi.org/10.1016/j.inffus.2026.104538"><img src="https://img.shields.io/badge/DOI-10.1016%2Fj.inffus.2026.104538-blue.svg" alt="DOI"></a>
     <a href="docs/paper.pdf"><img src="https://img.shields.io/badge/Paper-PDF-red.svg" alt="Paper"></a>
     <a href="https://js-ch3n.github.io/leap-slam.io/"><img src="https://img.shields.io/badge/Project%20Page-Website-brightgreen.svg" alt="Project Page"></a>
+    <a href="https://huggingface.co/datasets/js-ch3n/leap-slam-dataset-in-3-tunnels"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Dataset-FFD21E.svg" alt="Hugging Face Dataset"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL%20v2-green.svg" alt="License"></a>
   </p>
 </div>
