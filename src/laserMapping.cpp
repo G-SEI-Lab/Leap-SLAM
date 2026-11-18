@@ -109,6 +109,8 @@ int effct_feat_num_reflective = 0;
 double eigen_thres = 100;
 double intensity_thres = 200;
 int h_weight = 10;
+// 消融开关：默认保留完整算法；关闭后不依赖反光点及其地图。
+bool high_localizability_enable = true;
 double test = 0;
 double filter_size_reflective = 0;
 
@@ -779,6 +781,10 @@ void h_share_model(state_ikfom &s, esekfom::dyn_share_datastruct<double> &ekfom_
     double solve_start_  = omp_get_wtime();
     
     
+    // 关闭 HLC 时保留普通点面约束，跳过反光匹配及其有效点检查。
+    effct_feat_num_reflective = 0;
+    if (high_localizability_enable)
+    {
     // ==================reflective points=================
     // cjs on 20250627
     laserCloudOri_reflective->clear(); 
@@ -864,12 +870,13 @@ void h_share_model(state_ikfom &s, esekfom::dyn_share_datastruct<double> &ekfom_
     }
 
     res_mean_last = total_residual / effct_feat_num_reflective;
+    }
     
     /*** Computation of Measuremnt Jacobian matrix H and measurents vector ***/
     // int weight = 0;
 
 
-    int weight = h_weight;
+    int weight = high_localizability_enable ? h_weight : 0;
     int effct_num_total = effct_feat_num + effct_feat_num_reflective * weight;
 
     Eigen::MatrixXd hx_origin = MatrixXd::Zero(effct_feat_num, 12);
@@ -1430,6 +1437,7 @@ int main(int argc, char** argv)
     nh.param<double>("intensity_thres", intensity_thres, 250);
     nh.param<double>("test", test, 10);
     nh.param<int>("h_weight", h_weight, 10);
+    nh.param<bool>("high_localizability_enable", high_localizability_enable, true);
 
     nh.param<double>("filter_size_reflective", filter_size_reflective, 0.01);
     nh.param<double>("basic_motion_length", basic_motion_length, 10.0);
@@ -1615,22 +1623,25 @@ int main(int argc, char** argv)
 
             t_degen_end = omp_get_wtime();
             
-            // ===== get reflective points =====
-
-            // cjs on 20250626
-            // 不能用feats_down_body，这是体素滤波后的，intensity也被平均掉了
-            
-            // feats_reflective_body->clear();
-            // extractHighLocalizabilityFeatures_(feats_undistort, feats_reflective_body);
+            // Select by raw intensity before voxel averaging.
             feats_reflective_body->clear();
-            getReflectivePoints(feats_undistort, feats_reflective_body);
-            downSizeFilterReflective.setInputCloud(feats_reflective_body);
-            downSizeFilterReflective.filter(*feats_reflective_down_body);
+            feats_reflective_down_body->clear();
+            if (high_localizability_enable)
+            {
+                for (const auto& point : feats_undistort->points)
+                {
+                    if (point.intensity > intensity_thres)
+                        feats_reflective_body->points.push_back(point);
+                }
+                downSizeFilterReflective.setInputCloud(feats_reflective_body);
+                downSizeFilterReflective.filter(*feats_reflective_down_body);
+            }
             feats_reflective_size = feats_reflective_down_body->points.size();
 
             /*** initialize the map kdtree ***/
             // std::cout << "[debug]" << count_loop << ": before ikdtree building" << std::endl;
-            if (ikdtree.Root_Node == nullptr || ikdtree_reflective.Root_Node == nullptr)
+            if (ikdtree.Root_Node == nullptr ||
+                (high_localizability_enable && ikdtree_reflective.Root_Node == nullptr))
             {
                 if(ikdtree.Root_Node == nullptr)
                 {
@@ -1647,7 +1658,7 @@ int main(int argc, char** argv)
                 }
 
                 // initialize kdtree for high intensity points
-                if(ikdtree_reflective.Root_Node == nullptr)
+                if(high_localizability_enable && ikdtree_reflective.Root_Node == nullptr)
                 {
                     if(feats_reflective_size > 5)
                     {   
@@ -1668,7 +1679,7 @@ int main(int argc, char** argv)
             // check Robot B
             // cjs on 20250626
             // if (0)
-            if (ikdtree_reflective_to_build)
+            if (high_localizability_enable && ikdtree_reflective_to_build)
             {
                 int last_ikdtree_size = ikdtree_reflective.size();
                 feats_reflective_world->points.resize(feats_reflective_size);

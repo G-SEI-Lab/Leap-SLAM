@@ -37,7 +37,7 @@ pcd_save:
                                  # -1 : all frames will be saved in ONE pcd file, may lead to memory crash when having too much frames.
 
 eigen_thres: 100
-intensity_thres: 250
+intensity_thres: 200
 h_weight: 10
 basic_motion_length: 18
 
