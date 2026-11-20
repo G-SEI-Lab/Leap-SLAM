@@ -62,6 +62,31 @@ Detailed comparison in one of the tunnels.
   <img src="docs/exp_compare_leap-fast.png" alt="exp_compare_leap-fast" width="30%" />
 </div>
 
+## Open Issues
+
+### Tunnel 2 run-to-run variation
+
+With high-localizability constraints enabled, the pipeline bypasses the
+`getReflectivePoints()` call, filters points with `intensity > 200`, and then
+voxel-downsamples the selected points. An instrumented build using the original
+stationary gate produced an RTK endpoint-distance error of **0.162 m** in one run,
+close to the **0.16 m** reported in Table 2. Three runs of the same `best` binary
+(commit `173566a`) with the same Tunnel 2 bag and 1× playback produced
+**1.049 m**, **0.855 m**, and **0.777 m**, with identical first and last pose
+timestamps.
+
+The original gate reads the latest wheel-odometry callback state when processing
+each scan. Callback timing near stop–start transitions may change which scans
+update the estimator. The cause of the observed variation remains unconfirmed.
+
+The proposed change is to preserve the existing stationary thresholds and
+three-sample confirmation, buffer the resulting states with their wheel-odometry
+timestamps, and have `sync_packages()` attach to `MeasureGroup` the latest
+state at or before the scan end once wheel data covers that time. Verify that
+both sensors use the same time base and define how to handle missing wheel data.
+Repeat the same replay and compare per-scan gate decisions, trajectory
+repeatability, and RTK endpoint-distance errors against the baseline above.
+
 ## 📝 Citation
 
 If you find this work useful, please cite our paper:
